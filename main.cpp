@@ -1,7 +1,7 @@
 #include "raylib.h"
+#include "CS3113/cs3113.h"
+#include <math.h>
 
-// Enums
-enum AppStatus { TERMINATED, RUNNING };
 
 // Global Constants
 constexpr int SCREEN_WIDTH  = 1200,
