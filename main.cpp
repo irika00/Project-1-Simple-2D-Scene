@@ -28,6 +28,17 @@ Vector2 ghostPosition = {SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4 };
 Vector2 gFirePosition = ORIGIN;
 Vector2 gScale    = BASE_SIZE;
 
+
+constexpr float LIMIT_ANGLE = 20.0f;
+
+constexpr float TWO_PI_F    = 6.28318530718f;
+constexpr float ORBIT_SPEED = 1.0f;          // radians per second (~57°/s)
+
+constexpr float ORBIT_RADIUS_X = 424.3f;   // 300 * sqrt(2)
+constexpr float ORBIT_RADIUS_Y = 238.6f;   // 168.75 * sqrt(2)
+
+float gAngle = 3.92699f;  
+
 // Function Declarations
 void initialise();
 void processInput();
@@ -50,7 +61,16 @@ void processInput()
     if (WindowShouldClose()) gAppStatus = TERMINATED;
 }
 
-void update() {}
+void update()
+{
+    float deltaTime = GetFrameTime();
+
+    gAngle += ORBIT_SPEED * deltaTime;
+    if (gAngle >= TWO_PI_F) gAngle -= TWO_PI_F;
+
+    ghostPosition.x = gFirePosition.x + ORBIT_RADIUS_X * cosf(gAngle);
+    ghostPosition.y = gFirePosition.y + ORBIT_RADIUS_Y * sinf(gAngle);
+}
 
 void render()
 {
