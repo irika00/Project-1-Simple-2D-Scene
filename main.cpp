@@ -45,7 +45,7 @@ Vector2 gScale    = BASE_SIZE;
 
 
 
-constexpr float LIMIT_ANGLE = 10.0f;
+constexpr float LIMIT_ANGLE = 6.28319f;
 
 constexpr float TWO_PI_F    = 6.28318530718f;
 constexpr float ORBIT_SPEED = 1.0f;         
@@ -62,6 +62,7 @@ constexpr float PULSE_SPEED  = 6.0f;
 float gAngle = 0;  
 float fireAngle = 0;
 float pumpkinAngle = 0;
+constexpr float PUMPKIN_SPEED = 120.0f; 
 constexpr Vector2 FIRE_BASE = ORIGIN;
 constexpr float FLICKER_X_AMOUNT = 15.0f;
 constexpr float FLICKER_Y_AMOUNT = 10.0f;
@@ -103,9 +104,11 @@ void update()
     ghostPosition.x = gFirePosition.x + ORBIT_RADIUS_X * cosf(gAngle);
     ghostPosition.y = gFirePosition.y + ORBIT_RADIUS_Y * sinf(gAngle);
 
-    // fireAngle += ((gDirection == RIGHT) ? 1.0f : -1.0f)*deltaTime*10;
-    // if      (fireAngle >  LIMIT_ANGLE) gDirection = LEFT;
-    // else if (fireAngle < -LIMIT_ANGLE) gDirection = RIGHT;
+    // pumpkinAngle += ((gDirection == RIGHT) ? 1.0f : -1.0f)*deltaTime;
+    // if      (pumpkinAngle >  LIMIT_ANGLE) gDirection = LEFT;
+    // else if (pumpkinAngle < -LIMIT_ANGLE) gDirection = RIGHT;
+    pumpkinAngle += PUMPKIN_SPEED * deltaTime; 
+    if (pumpkinAngle >= 360.0f) pumpkinAngle -= 360.0f;
 
     gPulseTime += deltaTime;
     gPulseScale = 1.0f + PULSE_AMOUNT * sinf(gPulseTime * PULSE_SPEED);
