@@ -24,7 +24,7 @@ constexpr char BG_COLOUR[] = "#B2AAC6";
 constexpr Vector2 ORIGIN    = { SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 };
 constexpr Vector2 BASE_SIZE = { 1000.0f, 1000.0f };
 
-Vector2 gPosition = ORIGIN;
+Vector2 ghostPosition = {SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4 };
 Vector2 gFirePosition = ORIGIN;
 Vector2 gScale    = BASE_SIZE;
 
@@ -56,43 +56,38 @@ void render()
 {
     BeginDrawing();
     ClearBackground(ColorFromHex(BG_COLOUR));
-   
+    float ghost_width = static_cast<float>(gTexture.width);    // 216
+    float ghost_height = static_cast<float>(gTexture.height);   // 236
+
     // Rectangle textureArea = {
-    //     // top-left corner
     //     0.0f, 0.0f,
 
-    //     // how large of a rectangle, starting
-    //     // from the top-left corner, do we want
-    //     // to "slice"
-    //     static_cast<float>(gTexture_fire.width), // width
-    //     static_cast<float>(gTexture_fire.height) // height
+
+    //     static_cast<float>(gTexture.width), // width
+    //     static_cast<float>(gTexture.height) // height
     // };
 
     // Rectangle destinationArea = {
-    //     // where we want our rectangle to
-    //     // start being drawn on the screen
+
     //     gFirePosition.x,
     //     gFirePosition.y,
 
-    //     // how big we want that rectangle to be
-    //     // on the screen
+
     //     static_cast<float>(gScale.x),
     //     static_cast<float>(gScale.y)
     // };
 
-    // Vector2 originOffset = {
-    //     static_cast<float>(gScale.x) / 2.0f,
-    //     static_cast<float>(gScale.y) / 2.0f
-    // };
+    Vector2 originOffset = {
+        static_cast<float>(gScale.x) / 2.0f,
+        static_cast<float>(gScale.y) / 2.0f
+    };
+    Rectangle ghostTextureArea = { 0.0f, 0.0f, ghost_width, ghost_height };
+    Rectangle ghostDestinationArea   = { ghostPosition.x, ghostPosition.y, ghost_width, ghost_height };
+    Vector2   ghostOrigin = { ghost_width / 2.0f, ghost_height / 2.0f };
 
-    // DrawTexturePro(
-    //     gTexture_fire, 
-    //     textureArea, 
-    //     destinationArea, 
-    //     originOffset, 
-    //     0, 
-    //     WHITE
-    // );
+    DrawTexturePro(gTexture, ghostTextureArea, ghostDestinationArea, ghostOrigin, 0.0f, WHITE);
+
+
     float fire_width = static_cast<float>(gTexture_fire.width);    // 216
     float fire_height = static_cast<float>(gTexture_fire.height);   // 236
 
