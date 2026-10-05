@@ -20,22 +20,20 @@
 
 **/
 
-// Global Constants
+
 constexpr int SCREEN_WIDTH  = 1200,
               SCREEN_HEIGHT = 675,
               FPS           = 60;
 
             
 
-// Global Variables
+
 AppStatus gAppStatus = RUNNING;
 
 //Images
 constexpr char GHOST[] = "assets/ghost_pic_resized.png";
-constexpr char FIRE[] = "assets/new_fire.png";
-constexpr char BG[] = "assets/sky.png";
-constexpr char PUMPKIN[] = "assets/ne1.png";
-constexpr char SKY[] = "assets/sky.png";
+constexpr char FIRE[] = "assets/fire.png";
+constexpr char PUMPKIN[] = "assets/pumpkin.png";
 constexpr char GROUND[] = "assets/ground.png";
 
 
@@ -76,20 +74,20 @@ constexpr float ORBIT_SPEED = 1.0f;
 constexpr float ORBIT_RADIUS_X = 400; 
 constexpr float ORBIT_RADIUS_Y = 250 ; 
 constexpr float  FIRE_BASE_SIZE   = 1.0f;
-float gPulseScale = 1.0f;
-float gPulseTime  = 0.0f;
 constexpr float PULSE_AMOUNT = 0.1f; 
 constexpr float PULSE_SPEED  = 6.0f; 
-
-float gGhostAngle = 0;  
-float fireAngle = 0;
-float pumpkinAngle = 0;
 constexpr float PUMPKIN_SPEED = 120.0f; 
 constexpr float FLICKER_X_AMOUNT = 15.0f;
 constexpr float FLICKER_Y_AMOUNT = 10.0f;
 constexpr float FLICKER_SPEED    = 10.0f;
 constexpr float PUMPKIN_MOVE_SPEED = 400.0f; 
 
+
+float gPulseScale = 1.0f;
+float gPulseTime  = 0.0f;
+float gGhostAngle = 0;  
+float fireAngle = 0;
+float pumpkinAngle = 0;
 
 
 //for pumpkin movement
@@ -120,7 +118,6 @@ void initialise()
     gTexture = LoadTexture(GHOST);
     gTexture_fire = LoadTexture(FIRE);
     gTexture_pumpkin = LoadTexture(PUMPKIN);
-    gTexture_sky = LoadTexture(SKY);
     gTexture_ground = LoadTexture(GROUND);
     SetTargetFPS(FPS);
 }
@@ -152,7 +149,6 @@ void update()
 
     //pumpkin movement translation
     gPointTime += deltaTime;
-
     Vector2 target = POINTS[gPoint];
 
     // distance from target
@@ -187,48 +183,38 @@ void update()
 void render()
 {
     BeginDrawing();
-
-
     ClearBackground(ColorFromHex(BG_COLOURS[gBgIndex]));
 
-
+    //ground
     float ground_width = static_cast<float>(gTexture_ground.width);    
     float ground_height = static_cast<float>(gTexture_ground.height);  
-
-
     Rectangle groundTextureArea = { 0.0f, 0.0f, ground_width, ground_height };
     Rectangle groundDestinationArea   = { gBgPosition.x, gBgPosition.y, ground_width, ground_height};
     Vector2   groundOrigin = { ground_width / 2.0f, ground_height / 2.0f };
     DrawTexturePro(gTexture_ground, groundTextureArea, groundDestinationArea, groundOrigin, 0.0f, WHITE);
 
-
-
+    //ghost
     float ghost_width = static_cast<float>(gTexture.width);    
     float ghost_height = static_cast<float>(gTexture.height);  
-
     Rectangle ghostTextureArea = { 0.0f, 0.0f, ghost_width, ghost_height - 35 };
     Rectangle ghostDestinationArea   = { ghostPosition.x, ghostPosition.y, ghost_width, ghost_height };
     Vector2   ghostOrigin = { ghost_width / 2.0f, ghost_height / 2.0f };
     DrawTexturePro(gTexture, ghostTextureArea, ghostDestinationArea, ghostOrigin, 0.0f, WHITE);
 
-
+    //fire
     float fire_width = static_cast<float>(gTexture_fire.width)*gPulseScale;    
     float fire_height = static_cast<float>(gTexture_fire.height)*gPulseScale;  
-
     Rectangle fireTextureArea = { 0.0f, 0.0f, static_cast<float>(gTexture_fire.width), static_cast<float>(gTexture_fire.height) };
     Rectangle fireDestinationArea   = { gFirePosition.x, gFirePosition.y, fire_width, fire_height };
     Vector2   fireOrigin = { fire_width / 2.0f, fire_height / 2.0f };
-
     DrawTexturePro(gTexture_fire, fireTextureArea, fireDestinationArea, fireOrigin, fireAngle, WHITE);
 
-
-
+    //pumpkin
     float pumpkin_width = static_cast<float>(gTexture_pumpkin.width);    
     float pumpkin_height = static_cast<float>(gTexture_pumpkin.height);
     Rectangle pumpkinTextureArea = {0.0f, 0.0f,  static_cast<float>(gTexture_pumpkin.width), static_cast<float>(gTexture_pumpkin.width)};
     Rectangle pumpkinDestinationArea = {pumpkinPosition.x, pumpkinPosition.y, pumpkin_width, pumpkin_height};
     Vector2 pumpkinOrigin = {pumpkin_width/ 2.0f, pumpkin_height / 2.0f};
-
     DrawTexturePro(gTexture_pumpkin, pumpkinTextureArea, pumpkinDestinationArea, pumpkinOrigin, pumpkinAngle, WHITE);
 
     EndDrawing();
@@ -240,8 +226,7 @@ void shutdown()
     UnloadTexture(gTexture_bg);
     UnloadTexture(gTexture);
     UnloadTexture(gTexture_fire);
-    UnloadTexture(gTexture_sky);
-    CloseWindow(); // Close window and OpenGL context
+    CloseWindow(); 
 }
 
 int main(void)
