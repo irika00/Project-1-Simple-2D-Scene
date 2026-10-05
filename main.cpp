@@ -2,6 +2,23 @@
 #include "CS3113/cs3113.h"
 #include <math.h>
 
+/**
+
+* Author: Irika Aggarwal
+
+* Assignment: Project 1: Simple 2D Scene
+
+* Date due: Due: Monday, Oct 5th, 11:59PM
+
+* I pledge that I have completed this assignment without
+
+* collaborating with anyone else, in conformance with the
+
+* NYU School of Engineering Policies and Procedures on
+
+* Academic Misconduct.
+
+**/
 
 // Global Constants
 constexpr int SCREEN_WIDTH  = 1200,
@@ -16,8 +33,12 @@ AppStatus gAppStatus = RUNNING;
 //Images
 constexpr char GHOST[] = "assets/ghost_pic_resized.png";
 constexpr char FIRE[] = "assets/new_fire.png";
-constexpr char BG[] = "assets/newbg.jpg";
+constexpr char BG[] = "assets/sky.png";
 constexpr char PUMPKIN[] = "assets/ne1.png";
+constexpr char SKY[] = "assets/sky.png";
+constexpr char GROUND[] = "assets/ground.png";
+
+
 
 //direction
 enum Direction { LEFT, RIGHT };
@@ -31,22 +52,25 @@ Texture2D gTexture;
 Texture2D gTexture_fire;
 Texture2D gTexture_bg;
 Texture2D gTexture_pumpkin;
+Texture2D gTexture_sky;
+Texture2D gTexture_ground;
 
-constexpr char BG_COLOUR[] = "#B2AAC6";
 
+constexpr const char* BG_COLOURS[] = {"80D4FF", "#000080" };
+constexpr int BG_COLOUR_COUNT = 2;
+
+int gBgIndex = 0;
+
+//postions
 constexpr Vector2 ORIGIN    = { SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 };
 constexpr Vector2 BASE_SIZE = { 1000.0f, 1000.0f };
 constexpr Vector2 FIRE_BASE = ORIGIN;
-
-
-//postions
 Vector2 ghostPosition = {SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4 };
 Vector2 gFirePosition = ORIGIN;
-Vector2 gBgPosition = ORIGIN;
-Vector2 gScale    = BASE_SIZE;
+Vector2 gBgPosition = { SCREEN_WIDTH / 2, SCREEN_HEIGHT - SCREEN_HEIGHT / 4 };
 
 
-//constexpr float LIMIT_ANGLE = 6.28319f;
+
 constexpr float LIMIT_ANGLE = 360.0f;
 constexpr float ORBIT_SPEED = 1.0f;         
 constexpr float ORBIT_RADIUS_X = 400; 
@@ -95,8 +119,9 @@ void initialise()
     InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Happy October!");
     gTexture = LoadTexture(GHOST);
     gTexture_fire = LoadTexture(FIRE);
-    gTexture_bg = LoadTexture(BG);
     gTexture_pumpkin = LoadTexture(PUMPKIN);
+    gTexture_sky = LoadTexture(SKY);
+    gTexture_ground = LoadTexture(GROUND);
     SetTargetFPS(FPS);
 }
 
@@ -139,7 +164,9 @@ void update()
 
     if (distance < 5.0f)
     {
-        gPoint = (gPoint + 1) % 4;      
+        
+        gPoint = (gPoint + 1) % 4; 
+        gBgIndex = (gBgIndex + 1) % BG_COLOUR_COUNT;     
     }
     else
     {
@@ -148,7 +175,7 @@ void update()
     }
 
     
-    //fire flickering translation
+    //fire flickering 
     gPulseTime += deltaTime;
     gPulseScale = FIRE_BASE_SIZE + PULSE_AMOUNT * sinf(gPulseTime * PULSE_SPEED);
     gFirePosition.x = FIRE_BASE.x + FLICKER_X_AMOUNT * sinf(deltaTime * FLICKER_SPEED);
@@ -160,25 +187,26 @@ void update()
 void render()
 {
     BeginDrawing();
-    ClearBackground(ColorFromHex(BG_COLOUR));
-
-    //background
-    float bg_width = static_cast<float>(gTexture_bg.width);    
-    float bg_height = static_cast<float>(gTexture_bg.height);   
 
 
+    ClearBackground(ColorFromHex(BG_COLOURS[gBgIndex]));
 
-    Rectangle bgTextureArea = { 0.0f, 0.0f, bg_width, bg_height };
-    Rectangle bgDestinationArea   = { gBgPosition.x, gBgPosition.y, bg_width, bg_height};
-    Vector2   bgOrigin = { bg_width / 2.0f, bg_height / 2.0f };
-    DrawTexturePro(gTexture_bg, bgTextureArea, bgDestinationArea, bgOrigin, 0.0f, WHITE);
+
+    float ground_width = static_cast<float>(gTexture_ground.width);    
+    float ground_height = static_cast<float>(gTexture_ground.height);  
+
+
+    Rectangle groundTextureArea = { 0.0f, 0.0f, ground_width, ground_height };
+    Rectangle groundDestinationArea   = { gBgPosition.x, gBgPosition.y, ground_width, ground_height};
+    Vector2   groundOrigin = { ground_width / 2.0f, ground_height / 2.0f };
+    DrawTexturePro(gTexture_ground, groundTextureArea, groundDestinationArea, groundOrigin, 0.0f, WHITE);
 
 
 
     float ghost_width = static_cast<float>(gTexture.width);    
     float ghost_height = static_cast<float>(gTexture.height);  
 
-    Rectangle ghostTextureArea = { 0.0f, 0.0f, ghost_width, ghost_height };
+    Rectangle ghostTextureArea = { 0.0f, 0.0f, ghost_width, ghost_height - 35 };
     Rectangle ghostDestinationArea   = { ghostPosition.x, ghostPosition.y, ghost_width, ghost_height };
     Vector2   ghostOrigin = { ghost_width / 2.0f, ghost_height / 2.0f };
     DrawTexturePro(gTexture, ghostTextureArea, ghostDestinationArea, ghostOrigin, 0.0f, WHITE);
@@ -212,6 +240,7 @@ void shutdown()
     UnloadTexture(gTexture_bg);
     UnloadTexture(gTexture);
     UnloadTexture(gTexture_fire);
+    UnloadTexture(gTexture_sky);
     CloseWindow(); // Close window and OpenGL context
 }
 
