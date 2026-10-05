@@ -19,11 +19,14 @@ constexpr char FIRE[] = "assets/new_fire.png";
 constexpr char BG[] = "assets/newbg.jpg";
 constexpr char PUMPKIN[] = "assets/ne1.png";
 
-
+//direction
 enum Direction { LEFT, RIGHT };
 Direction gDirection = RIGHT; 
 
+//for delta time
 float gPreviousTicks = 0.0f;
+
+//textures
 Texture2D gTexture;
 Texture2D gTexture_fire;
 Texture2D gTexture_bg;
@@ -33,44 +36,39 @@ constexpr char BG_COLOUR[] = "#B2AAC6";
 
 constexpr Vector2 ORIGIN    = { SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 };
 constexpr Vector2 BASE_SIZE = { 1000.0f, 1000.0f };
+constexpr Vector2 FIRE_BASE = ORIGIN;
 
+
+//postions
 Vector2 ghostPosition = {SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4 };
-//Vector2 pumpkinPosition = {SCREEN_WIDTH, SCREEN_HEIGHT - 300}; //rightmost
-//Vector2 pumpkinPosition = {50 , SCREEN_HEIGHT - 300}; //leftmost
-//Vector2 pumpkinPosition = {SCREEN_WIDTH/2 , SCREEN_HEIGHT - 50}; //bottomftmost
-//Vector2 pumpkinPosition = {SCREEN_WIDTH/2 , 50}; //leftmost
 Vector2 gFirePosition = ORIGIN;
 Vector2 gBgPosition = ORIGIN;
 Vector2 gScale    = BASE_SIZE;
 
 
-
-constexpr float LIMIT_ANGLE = 6.28319f;
-
-constexpr float TWO_PI_F    = 6.28318530718f;
+//constexpr float LIMIT_ANGLE = 6.28319f;
+constexpr float LIMIT_ANGLE = 360.0f;
 constexpr float ORBIT_SPEED = 1.0f;         
-
 constexpr float ORBIT_RADIUS_X = 400; 
 constexpr float ORBIT_RADIUS_Y = 250 ; 
-
-
+constexpr float  FIRE_BASE_SIZE   = 1.0f;
 float gPulseScale = 1.0f;
 float gPulseTime  = 0.0f;
 constexpr float PULSE_AMOUNT = 0.1f; 
 constexpr float PULSE_SPEED  = 6.0f; 
 
-float gAngle = 0;  
+float gGhostAngle = 0;  
 float fireAngle = 0;
 float pumpkinAngle = 0;
 constexpr float PUMPKIN_SPEED = 120.0f; 
-constexpr Vector2 FIRE_BASE = ORIGIN;
 constexpr float FLICKER_X_AMOUNT = 15.0f;
 constexpr float FLICKER_Y_AMOUNT = 10.0f;
 constexpr float FLICKER_SPEED    = 10.0f;
+constexpr float PUMPKIN_MOVE_SPEED = 400.0f; 
 
 
 
-//test-
+//for pumpkin movement
 constexpr Vector2 POINTS[4] = {
     { SCREEN_WIDTH / 2.0f,  50.0f                 },   // top
     { SCREEN_WIDTH - 50.0f, SCREEN_HEIGHT - 300.0f },   // right
@@ -78,10 +76,9 @@ constexpr Vector2 POINTS[4] = {
     { 50.0f,                SCREEN_HEIGHT - 300.0f }    // left
 };
 
-constexpr float LEG_DURATION = 1.5f;   // seconds to travel between two points
 
-int   gPoint = 0;       // index of the point we're leaving
-float gPointTime  = 0.0f;    // seconds spent on the current leg
+int   gPoint = 0;      
+float gPointTime  = 0.0f; 
 Vector2 pumpkinPosition = POINTS[0];
 
 // Function Declarations
@@ -95,7 +92,7 @@ void shutdown();
 void initialise()
 {
     
-    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Happy early Halloween!");
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Happy October!");
     gTexture = LoadTexture(GHOST);
     gTexture_fire = LoadTexture(FIRE);
     gTexture_bg = LoadTexture(BG);
@@ -110,43 +107,52 @@ void processInput()
 
 void update()
 {
+    //delta time
     float ticks = static_cast<float>(GetTime()); 
     float deltaTime = ticks - gPreviousTicks; 
     gPreviousTicks = ticks;                   
 
-    gAngle += ORBIT_SPEED * deltaTime;
-    if (gAngle >= TWO_PI_F) gAngle -= TWO_PI_F;
+    //ghost movement
+    gGhostAngle += ORBIT_SPEED * deltaTime;
+    if (gGhostAngle >= LIMIT_ANGLE) gGhostAngle -= LIMIT_ANGLE;
+    //ghost translation  relative to fire
+    ghostPosition.x = gFirePosition.x + ORBIT_RADIUS_X * cosf(gGhostAngle); 
+    ghostPosition.y = gFirePosition.y + ORBIT_RADIUS_Y * sinf(gGhostAngle);
 
-    ghostPosition.x = gFirePosition.x + ORBIT_RADIUS_X * cosf(gAngle);
-    ghostPosition.y = gFirePosition.y + ORBIT_RADIUS_Y * sinf(gAngle);
-
-    // pumpkinAngle += ((gDirection == RIGHT) ? 1.0f : -1.0f)*deltaTime;
-    // if      (pumpkinAngle >  LIMIT_ANGLE) gDirection = LEFT;
-    // else if (pumpkinAngle < -LIMIT_ANGLE) gDirection = RIGHT;
+    
+    //pumpkin movement (rotation)
     pumpkinAngle += PUMPKIN_SPEED * deltaTime; 
-    if (pumpkinAngle >= 360.0f) pumpkinAngle -= 360.0f;
-
-    gPulseTime += deltaTime;
-    gPulseScale = 1.0f + PULSE_AMOUNT * sinf(gPulseTime * PULSE_SPEED);
-    gFirePosition.x = FIRE_BASE.x + FLICKER_X_AMOUNT * sinf(deltaTime * FLICKER_SPEED);
-    gFirePosition.y = FIRE_BASE.y + FLICKER_Y_AMOUNT * sinf(deltaTime * FLICKER_SPEED*100);
+    if (pumpkinAngle >= LIMIT_ANGLE) pumpkinAngle -= LIMIT_ANGLE;
 
 
-
+    //pumpkin movement translation
     gPointTime += deltaTime;
 
-    if (gPointTime >= LEG_DURATION)
+    Vector2 target = POINTS[gPoint];
+
+    // distance from target
+    float distance_remaining_x = target.x - pumpkinPosition.x;
+    float distance_remaining_y = target.y - pumpkinPosition.y;
+
+    // straight-line distance
+    float distance = sqrtf(distance_remaining_x * distance_remaining_x + distance_remaining_y * distance_remaining_y);
+
+    if (distance < 5.0f)
     {
-        gPointTime -= LEG_DURATION;              
-        gPoint = (gPoint + 1) % 4;       
+        gPoint = (gPoint + 1) % 4;      
+    }
+    else
+    {
+        pumpkinPosition.x += (distance_remaining_x / distance) * PUMPKIN_MOVE_SPEED * deltaTime;
+        pumpkinPosition.y += (distance_remaining_y / distance) * PUMPKIN_MOVE_SPEED * deltaTime;
     }
 
-    Vector2 from = POINTS[gPoint];
-    Vector2 to   = POINTS[(gPoint + 1) % 4];
-    float   t    = gPointTime / LEG_DURATION;  
-
-    pumpkinPosition.x = from.x + (to.x - from.x) * t;
-    pumpkinPosition.y = from.y + (to.y - from.y) * t;
+    
+    //fire flickering translation
+    gPulseTime += deltaTime;
+    gPulseScale = FIRE_BASE_SIZE + PULSE_AMOUNT * sinf(gPulseTime * PULSE_SPEED);
+    gFirePosition.x = FIRE_BASE.x + FLICKER_X_AMOUNT * sinf(deltaTime * FLICKER_SPEED);
+    gFirePosition.y = FIRE_BASE.y + FLICKER_Y_AMOUNT * sinf(deltaTime * FLICKER_SPEED*100);
 
 
 }
@@ -171,10 +177,7 @@ void render()
 
     float ghost_width = static_cast<float>(gTexture.width);    
     float ghost_height = static_cast<float>(gTexture.height);  
-    // Vector2 originOffset = {
-    //     static_cast<float>(gScale.x) / 2.0f,
-    //     static_cast<float>(gScale.y) / 2.0f
-    // };
+
     Rectangle ghostTextureArea = { 0.0f, 0.0f, ghost_width, ghost_height };
     Rectangle ghostDestinationArea   = { ghostPosition.x, ghostPosition.y, ghost_width, ghost_height };
     Vector2   ghostOrigin = { ghost_width / 2.0f, ghost_height / 2.0f };
