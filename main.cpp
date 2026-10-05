@@ -38,7 +38,7 @@ Vector2 ghostPosition = {SCREEN_WIDTH / 4, SCREEN_HEIGHT / 4 };
 //Vector2 pumpkinPosition = {SCREEN_WIDTH, SCREEN_HEIGHT - 300}; //rightmost
 //Vector2 pumpkinPosition = {50 , SCREEN_HEIGHT - 300}; //leftmost
 //Vector2 pumpkinPosition = {SCREEN_WIDTH/2 , SCREEN_HEIGHT - 50}; //bottomftmost
-Vector2 pumpkinPosition = {SCREEN_WIDTH/2 , 50}; //leftmost
+//Vector2 pumpkinPosition = {SCREEN_WIDTH/2 , 50}; //leftmost
 Vector2 gFirePosition = ORIGIN;
 Vector2 gBgPosition = ORIGIN;
 Vector2 gScale    = BASE_SIZE;
@@ -68,6 +68,22 @@ constexpr float FLICKER_X_AMOUNT = 15.0f;
 constexpr float FLICKER_Y_AMOUNT = 10.0f;
 constexpr float FLICKER_SPEED    = 10.0f;
 
+
+
+//test-
+constexpr Vector2 POINTS[4] = {
+    { SCREEN_WIDTH / 2.0f,  50.0f                 },   // top
+    { SCREEN_WIDTH - 50.0f, SCREEN_HEIGHT - 300.0f },   // right
+    { SCREEN_WIDTH / 2.0f,  SCREEN_HEIGHT - 50.0f  },   // bottom
+    { 50.0f,                SCREEN_HEIGHT - 300.0f }    // left
+};
+
+constexpr float LEG_DURATION = 1.5f;   // seconds to travel between two points
+
+int   gPoint = 0;       // index of the point we're leaving
+float gPointTime  = 0.0f;    // seconds spent on the current leg
+Vector2 pumpkinPosition = POINTS[0];
+
 // Function Declarations
 void initialise();
 void processInput();
@@ -79,7 +95,7 @@ void shutdown();
 void initialise()
 {
     
-    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Textures");
+    InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Happy early Halloween!");
     gTexture = LoadTexture(GHOST);
     gTexture_fire = LoadTexture(FIRE);
     gTexture_bg = LoadTexture(BG);
@@ -113,13 +129,24 @@ void update()
     gPulseTime += deltaTime;
     gPulseScale = 1.0f + PULSE_AMOUNT * sinf(gPulseTime * PULSE_SPEED);
     gFirePosition.x = FIRE_BASE.x + FLICKER_X_AMOUNT * sinf(deltaTime * FLICKER_SPEED);
-    gFirePosition.y = FIRE_BASE.y + FLICKER_Y_AMOUNT * sinf(deltaTime * FLICKER_SPEED*2.5);
+    gFirePosition.y = FIRE_BASE.y + FLICKER_Y_AMOUNT * sinf(deltaTime * FLICKER_SPEED*100);
 
 
 
-    
-    // if (pumpkinPosition.x < SCREEN_WIDTH)  pumpkinPosition.x += 1.0f;
-    // if (pumpkinPosition.y < SCREEN_HEIGHT) pumpkinPosition.y += 0.5f;
+    gPointTime += deltaTime;
+
+    if (gPointTime >= LEG_DURATION)
+    {
+        gPointTime -= LEG_DURATION;              
+        gPoint = (gPoint + 1) % 4;       
+    }
+
+    Vector2 from = POINTS[gPoint];
+    Vector2 to   = POINTS[(gPoint + 1) % 4];
+    float   t    = gPointTime / LEG_DURATION;  
+
+    pumpkinPosition.x = from.x + (to.x - from.x) * t;
+    pumpkinPosition.y = from.y + (to.y - from.y) * t;
 
 
 }
